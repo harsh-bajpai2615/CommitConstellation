@@ -528,10 +528,10 @@ function observedLine(data) {
   const from = year(data.span.first), to = year(data.span.last)
   const authors = data.counts.authors
   // "Observed" because the log is capped at 2,000 commits: for a long-lived repo this is
-  // the window we sampled, not the year the project began. Svelte reading "2024 – 2026"
+  // the window we sampled, not the year the project began. Svelte reading "2024 to 2026"
   // without that word is a sentence that lies.
   return [
-    `Observed ${from === to ? from : `${from} – ${to}`}`,
+    `Observed ${from === to ? from : `${from} to ${to}`}`,
     `${authors.toLocaleString()} author${authors === 1 ? '' : 's'}`,
     `${data.span.days.toLocaleString()} days`,
   ].join('  ·  ')

@@ -374,7 +374,7 @@ html, body {
 
 /* ---------------------------------------------------------------- no arrival animation
 
-   ⛔ Do not add an entrance animation to the chrome. This was tried twice and it produced
+   Do not add an entrance animation to the chrome. This was tried twice and it produced
    a blank page both times.
 
    Anything that animates from `opacity: 0` on load is a trap here, and removing the
