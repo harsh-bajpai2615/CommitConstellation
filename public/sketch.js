@@ -20,6 +20,12 @@ const skyFocus = el('skyFocus')
 const readout = el('readout')
 const recentEl = el('recent')
 const zoomBar = el('zoom')
+
+// On GitHub Pages there is no server to clone with, so the page reads histories that were
+// precomputed into data/ and can only plot those.
+const STATIC = location.hostname.endsWith('github.io')
+const GALLERY = ['sveltejs/svelte', 'expressjs/express', 'sindresorhus/slugify', 'chalk/chalk',
+  'tiangolo/fastapi', 'vuejs/core', 'jquery/jquery']
 const zoomIn = el('zoomIn')
 const zoomOut = el('zoomOut')
 const zoomReset = el('zoomReset')
@@ -534,7 +540,7 @@ function observedLine(data) {
     `Observed ${from === to ? from : `${from} to ${to}`}`,
     `${authors.toLocaleString()} author${authors === 1 ? '' : 's'}`,
     `${data.span.days.toLocaleString()} days`,
-  ].join('  ·  ')
+  ].join(',  ')
 }
 
 function drawLabels(labelled) {
@@ -845,16 +851,21 @@ async function plot(src) {
   // claims no progress it cannot measure -- and after three seconds it explains itself,
   // because by then this is a first-time clone rather than a cached read.
   const startedAt = Date.now()
-  statusEl.textContent = 'READING HISTORY…'
+  statusEl.textContent = 'READING HISTORY...'
   const ticking = setInterval(() => {
     const secs = (Date.now() - startedAt) / 1000
     statusEl.textContent = secs < 3
-      ? `READING HISTORY… ${secs.toFixed(1)}s`
-      : `CLONING… ${secs.toFixed(1)}s · FIRST TIME IS SLOWEST`
+      ? `READING HISTORY... ${secs.toFixed(1)}s`
+      : `CLONING... ${secs.toFixed(1)}s, FIRST TIME IS SLOWEST`
   }, 100)
 
   try {
-    const res = await fetch(`/api/constellation?src=${encodeURIComponent(src)}`)
+    if (STATIC && !GALLERY.includes(src)) {
+      throw new Error(`This online version has ${GALLERY.length} repos ready: ${GALLERY.join(', ')}. Run it locally to plot any repo.`)
+    }
+    const res = await fetch(STATIC
+      ? `data/${src.replace('/', '__')}.json`
+      : `/api/constellation?src=${encodeURIComponent(src)}`)
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Could not read that repo.')
 
@@ -891,7 +902,7 @@ async function plot(src) {
     rememberPlot(src)
     // Cased here rather than with text-transform, so the unit on the timing stays a
     // lowercase "s" instead of being shouted as "0.1S".
-    statusEl.textContent = `${data.counts.commits.toLocaleString()} COMMITS · ${data.counts.authors} AUTHOR${data.counts.authors === 1 ? '' : 'S'} · ${(data.tookMs / 1000).toFixed(1)}s`
+    statusEl.textContent = `${data.counts.commits.toLocaleString()} COMMITS, ${data.counts.authors} AUTHOR${data.counts.authors === 1 ? '' : 'S'}${STATIC ? '' : `, ${(data.tookMs / 1000).toFixed(1)}s`}`
     loop()
   } catch (err) {
     statusEl.className = 'error'

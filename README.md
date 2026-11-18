@@ -4,6 +4,9 @@ Point it at any git repo. It reads the commit history and draws the repo as a ni
 every file is a star sized by how often it changes, and a line between two stars means
 those files keep changing in the same commit
 
+[Try it online](https://harsh-bajpai2615.github.io/CommitConstellation/) with seven
+well-known repos already read in. To plot any other repo, run it locally:
+
 ```bash
 node server.mjs          # http://localhost:4173, no install step
 ```
